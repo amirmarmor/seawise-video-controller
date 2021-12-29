@@ -204,7 +204,8 @@ func (r *Recorder) checkVideoRules(now *time.Time, rule *db.Rule) int {
 	if rule.Start == bar {
 		r.startVideo = now
 	}
-	log.V5(fmt.Sprintf("%v, %v, %v, %v, %v", rule.Start, bar, r.startVideo, rule.Duration, r.status))
+
+	//log.V5(fmt.Sprintf("%v, %v, %v, %v, %v", rule.Start, bar, r.startVideo, rule.Duration, r.status))
 	if r.startVideo == nil || now.Sub(*r.startVideo) > time.Second*time.Duration(rule.Duration) {
 		r.startVideo = nil
 		return 0
