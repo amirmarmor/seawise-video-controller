@@ -19,9 +19,10 @@ type Listener struct {
 	contentLengthPacketSize uint
 	Stream                  *mjpeg.Stream
 	Recorder                *recorder.Recorder
+	disconnectQueue         *chan string
 }
 
-func Create(port int, rec *recorder.Recorder) (*Listener, error) {
+func Create(port int, dq *chan string, rec *recorder.Recorder) (*Listener, error) {
 	tcpListener, err := net.ListenTCP("tcp", &net.TCPAddr{
 		IP:   net.ParseIP("0.0.0.0"),
 		Port: port,
@@ -42,6 +43,7 @@ func Create(port int, rec *recorder.Recorder) (*Listener, error) {
 		contentLengthPacketSize: 8,
 		Stream:                  mjpeg.NewStream(),
 		Recorder:                rec,
+		disconnectQueue:         dq,
 	}
 
 	log.V5(fmt.Sprintf("Listening on 0.0.0.0:%v", port))

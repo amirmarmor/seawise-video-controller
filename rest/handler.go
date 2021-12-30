@@ -58,7 +58,7 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 
 	rec := recorder.Create(newDevice.Sn, newDevice.Ip, newDevice.Rules)
 
-	streamer, err := listener.Create(port, rec)
+	streamer, err := listener.Create(port, &s.DisconnectQueue, rec)
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to open socket %v: %v", port, err))
 		sendErrorMessage(w)
@@ -150,6 +150,20 @@ func (s *Server) HandleOutbound(w http.ResponseWriter, r *http.Request) {
 	//	log.Warn(fmt.Sprintf("Failed to stop device - %v", s.Port))
 	//}
 	//log.V5(fmt.Sprintf("Stopping - %v, channel - %v", s.Ip, s.Channel))
+}
+
+func (s *Server) handleDisconnect() {
+	for {
+		select {
+		case d := <-s.DisconnectQueue:
+			go s.removeRegisteredDevice(d)
+		}
+	}
+}
+
+func (s *Server) removeRegisteredDevice(d string) {
+	delete(s.RegisteredDevices, d)
+	log.V5(fmt.Sprintf("removed device: %v", d))
 }
 
 func (s *Server) createEncoder(w http.ResponseWriter) *json.Encoder {

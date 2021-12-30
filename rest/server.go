@@ -10,6 +10,7 @@ type Server struct {
 	Router            *mux.Router
 	Api               *db.Api
 	RegisteredDevices map[string]*RegisteredDevice
+	DisconnectQueue   chan string
 }
 
 type RegisteredDevice struct {
@@ -22,6 +23,7 @@ func Create(api *db.Api) *Server {
 	server := &Server{
 		Api:               api,
 		RegisteredDevices: make(map[string]*RegisteredDevice),
+		DisconnectQueue:   make(chan string),
 	}
 
 	router.HandleFunc("/register", server.register).Methods("POST")
@@ -29,5 +31,8 @@ func Create(api *db.Api) *Server {
 	router.HandleFunc("/update", server.update)
 	router.HandleFunc("/stream/{sn}", server.HandleOutbound)
 	server.Router = router
+
+	go server.handleDisconnect()
 	return server
 }
+

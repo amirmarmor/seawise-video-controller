@@ -49,6 +49,8 @@ func (l *Listener) handleConn(conn net.Conn) {
 			if err != nil {
 				log.Warn(fmt.Sprintf("failed to close listener: %v", err))
 			}
+			log.Warn(fmt.Sprintf("Listener closed - %v", l.TCPListener))
+			*l.disconnectQueue <- l.Recorder.Sn
 			break
 		}
 
@@ -72,4 +74,5 @@ func (l *Listener) handleConn(conn net.Conn) {
 		l.Frame.Write(buf)
 		l.FrameMutex.Unlock()
 	}
+	return
 }

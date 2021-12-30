@@ -18,7 +18,7 @@ type Recorder struct {
 	ticker     *time.Ticker
 	startVideo *time.Time
 	startImage *time.Time
-	sn         string
+	Sn         string
 	ip         string
 	status     int
 	writer     *gocv.VideoWriter
@@ -29,7 +29,7 @@ func Create(sn string, ip string, rules []*db.Rule) *Recorder {
 	rec := &Recorder{
 		Rules:  rules,
 		ticker: time.NewTicker(1 * time.Second),
-		sn:     sn,
+		Sn:     sn,
 		ip:     ip,
 	}
 	go rec.start()
@@ -144,7 +144,7 @@ func (r *Recorder) createSavePath() (string, error) {
 		}
 	}
 
-	path := fmt.Sprintf("videos/%v", r.sn)
+	path := fmt.Sprintf("videos/%v", r.Sn)
 	_, err = os.Stat(path)
 
 	if os.IsNotExist(err) {
