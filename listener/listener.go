@@ -3,52 +3,69 @@ package listener
 import (
 	"bytes"
 	"fmt"
-	"github.com/hybridgroup/mjpeg"
 	"net"
 	"sync"
+	"www.seawise.com/controller/core"
+	"www.seawise.com/controller/db"
 	"www.seawise.com/controller/log"
 	"www.seawise.com/controller/recorder"
+	"www.seawise.com/controller/stream"
 )
 
 type Listener struct {
+	DeviceInfo              *db.Device
 	TCPListener             net.Listener
 	TCPListenerMutex        sync.Mutex
 	Frame                   *bytes.Buffer
 	FrameMutex              sync.RWMutex
 	timeStampPacketSize     uint
 	contentLengthPacketSize uint
-	Stream                  *mjpeg.Stream
+	Stream                  *stream.Stream
 	Recorder                *recorder.Recorder
 	disconnectQueue         *chan string
 }
 
-func Create(port int, dq *chan string, rec *recorder.Recorder) (*Listener, error) {
-	tcpListener, err := net.ListenTCP("tcp", &net.TCPAddr{
-		IP:   net.ParseIP("0.0.0.0"),
-		Port: port,
-	})
+func Create(port int, device *db.Device, dq *chan string) ([]*Listener, error) {
+	if core.Config.Parallel {
+		listeners := make([]*Listener, 0)
+		for i := 0; i < device.Channels; i++ {
+			actualPort := port + i
+			rec := recorder.Create(device.Sn, device.Ip, device.Rules)
 
-	if err != nil {
-		return nil, fmt.Errorf("generate tcp server failed! - %v", err)
+			tcpListener, err := net.ListenTCP("tcp", &net.TCPAddr{
+				IP:   net.ParseIP("0.0.0.0"),
+				Port: actualPort,
+			})
+
+			if err != nil {
+				return nil, fmt.Errorf("generate tcp server failed! - %v", err)
+			}
+
+			buf := new(bytes.Buffer)
+
+			listener := &Listener{
+				DeviceInfo:              device,
+				TCPListener:             tcpListener,
+				TCPListenerMutex:        sync.Mutex{},
+				Frame:                   buf,
+				FrameMutex:              sync.RWMutex{},
+				timeStampPacketSize:     8,
+				contentLengthPacketSize: 8,
+				Stream:                  stream.NewStream(),
+				Recorder:                rec,
+				disconnectQueue:         dq,
+			}
+
+			log.V5(fmt.Sprintf("Listening on 0.0.0.0:%v", actualPort))
+			go listener.Run()
+
+			listeners = append(listeners, listener)
+		}
+		return listeners, nil
 	}
 
-	buf := new(bytes.Buffer)
-
-	listener := &Listener{
-		TCPListener:             tcpListener,
-		TCPListenerMutex:        sync.Mutex{},
-		Frame:                   buf,
-		FrameMutex:              sync.RWMutex{},
-		timeStampPacketSize:     8,
-		contentLengthPacketSize: 8,
-		Stream:                  mjpeg.NewStream(),
-		Recorder:                rec,
-		disconnectQueue:         dq,
-	}
-
-	log.V5(fmt.Sprintf("Listening on 0.0.0.0:%v", port))
-	go listener.Run()
-	return listener, nil
+	//TODO: add logic for rotating case listener
+	return nil, nil
 }
 
 func (l *Listener) Run() {

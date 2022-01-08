@@ -7,10 +7,13 @@ import (
 )
 
 type Configuration = struct {
-	Port   int
-	DbHost string
-	Device int
-	Path   string
+	Port     int
+	DbHost   string
+	Device   int
+	Path     string
+	Parallel bool
+	SSHUser  string
+	SSHPass  string
 }
 
 var Config Configuration
@@ -20,6 +23,9 @@ func InitFlags() {
 	flag.IntVar(&Config.Device, "device", 4000, "The device port")
 	flag.StringVar(&Config.DbHost, "dbhost", "localhost", "The db host")
 	flag.StringVar(&Config.Path, "path", "/", "The db host")
+	flag.StringVar(&Config.SSHUser, "sshuser", "pi", "pi user")
+	flag.StringVar(&Config.SSHPass, "sshpass", "raspberry", "pi pass")
+	flag.BoolVar(&Config.Parallel, "parallel", true, "parallel or rotating")
 
 	log.AddNotify(postParse)
 }

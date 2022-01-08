@@ -2,6 +2,7 @@ package entrypoint
 
 import (
 	"fmt"
+	"github.com/gorilla/handlers"
 	"net/http"
 	"www.seawise.com/controller/core"
 	"www.seawise.com/controller/db"
@@ -10,9 +11,11 @@ import (
 )
 
 type EntryPoint struct {
-	server *rest.Server
-	api    *db.Api
-	//configManager *core.ConfigManager
+	server      *rest.Server
+	api         *db.Api
+	methods     *handlers.CORSOption
+	credentials *handlers.CORSOption
+	origins     *handlers.CORSOption
 }
 
 func (p *EntryPoint) Run() {
@@ -23,10 +26,11 @@ func (p *EntryPoint) Run() {
 	log.Info("Starting")
 
 	p.buildBlocks()
-	//p.addHandlers()
+	p.addHandlers()
+
 	cleanSigTerm := Produce()
 	port := fmt.Sprintf(":%v", core.Config.Port)
-	err := http.ListenAndServe(port, p.server.Router)
+	err := http.ListenAndServe(port, handlers.CORS(*p.credentials, *p.methods, *p.origins)(p.server.Router))
 	if err != nil {
 		panic(err)
 	}
@@ -34,42 +38,18 @@ func (p *EntryPoint) Run() {
 }
 
 func (p *EntryPoint) buildBlocks() {
-	//var err error
 	p.api = db.Create()
-
 	p.server = rest.Create(p.api)
-
-	//p.configManager, err = core.Create()
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	//p.servers, err = rest.Create(p.configManager.Devices)
-	//if err != nil {
-	//	panic(err)
-	//}
 }
 
-//func (p *EntryPoint) addHandlers() {
-//	for _, s := range p.servers {
-//		path := "/stream/" + strconv.Itoa(s.Port)
-//		http.HandleFunc(path, s.HandleOutbound)
-//	}
-//
-//	http.HandleFunc("/sync", p.SyncHandler)
-//}
+func (p *EntryPoint) addHandlers() {
+	credentials := handlers.AllowCredentials()
+	p.credentials = &credentials
 
-//func (p *EntryPoint) SyncHandler(w http.ResponseWriter, r *http.Request) {
-//	log.V5("Syncing....")
-//	for _, device := range p.configManager.Devices {
-//		err := p.configManager.GetConfig(device.Id)
-//		if err != nil {
-//			log.Warn(fmt.Sprintf("Failed to sync device %v configuartion: %v", device.Id, err))
-//		}
-//	}
-//
-//	_, err := w.Write([]byte("Done"))
-//	if err != nil {
-//		log.Warn(fmt.Sprintf("Failed to respond to sync: %v", err))
-//	}
-//}
+	methods := handlers.AllowedMethods([]string{"POST", "GET"})
+	p.methods = &methods
+
+	origins := handlers.AllowedOrigins([]string{"*"})
+	p.origins = &origins
+
+}
