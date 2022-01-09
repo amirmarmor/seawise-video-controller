@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/ssh"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -184,6 +185,7 @@ func (s *Server) handleRestart(w http.ResponseWriter, r *http.Request) {
 	if ip == "" {
 		log.Warn(fmt.Sprintf("invalid ip"))
 		sendErrorMessage(w)
+		return
 	}
 
 	url := fmt.Sprintf("http://%v:%v/shutdown", ip, core.Config.Device)
@@ -191,20 +193,33 @@ func (s *Server) handleRestart(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to shutdown device %v: %v", ip, err))
 		sendErrorMessage(w)
+		return
 	}
-	log.V5(fmt.Sprintf("received shutdown response - %v", resp))
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Warn(fmt.Sprintf("failed to read response: %v", err))
+		sendErrorMessage(w)
+		return
+	}
+
+	log.V5(fmt.Sprintf("received shutdown response - %v", string(body)))
 
 	s.SshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
-	client, err := ssh.Dial("tcp", ip, s.SshConfig)
+	url = fmt.Sprintf("%v:22", ip)
+	client, err := ssh.Dial("tcp", url, s.SshConfig)
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to open ssh connection to %v: %v", ip, err))
 		sendErrorMessage(w)
+		return
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to open session: %v", err))
 		sendErrorMessage(w)
+		return
 	}
 
 	cmd := "bash -c '/home/pi/seawise-video-streamer/updatepi.sh > /home/pi/sw.log 2>&1' &"
@@ -212,15 +227,18 @@ func (s *Server) handleRestart(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to run cmd %v: %v", cmd, err))
 		sendErrorMessage(w)
+		return
 	}
 
-	log.V5(fmt.Sprintf("result %v", out))
+	log.V5(fmt.Sprintf("result %v", string(out)))
 	err = client.Close()
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to close ssh connection: %v", err))
 		sendErrorMessage(w)
+		return
 	}
 
+	log.V5("DONE RESTARTING")
 }
 
 func (s *Server) removeStreamers(d string) {
