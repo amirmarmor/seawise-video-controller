@@ -5,62 +5,63 @@ import Frame from "./frame"
 function Recording(props) {
   const [ch, setch] = useState()
 
-  function handleClick(ch){
+  function handleClick(ch) {
     setch(ch)
   }
 
-  function renderChannels(){
+  function renderChannels() {
     let lis = []
     for (let i = 0; i < props.current.channels; i++) {
-      lis.push(<li onClick={()=>handleClick(i)}>i</li>)
+      lis.push(<li onClick={() => handleClick(i)}>{i}</li>)
     }
     return lis
   }
+
   function renderFrames() {
-    let frames = []
-    for (let i = 0; i < props.current.channels; i++) {
-      frames.push(
-        <Frame
-          key={`Channels-${i}`}
-          channel={i}
-          sn={props.current.sn}
-        />
-      )
+    if(!ch) {
+      setch(0)
     }
-    return frames
+    return <Frame
+      key={`Channels-${i}`}
+      channel={ch}
+      sn={props.current.sn}
+    />
   }
 
-  const styleMain = {
-    width: "100%",
-    height: "100%",
-    textAlign: "center",
-    position: "relative",
-  }
+  return frames
+}
 
-  return (
-    <>
-      {props.current ?
-        <Card>
-          <Card.Header>
-            STREAMS
-          </Card.Header>
-          <Card.Body>
-            <div>
-              Choose channel:
-              <ul>
-                {renderChannels()}
-              </ul>
-            </div>
-            <div style={styleMain}>
-              {renderFrames()}
-            </div>
-          </Card.Body>
-        </Card> : <Alert variant={"danger"}>
-          Please select device first!
-        </Alert>
-      }
-    </>
-  )
+const styleMain = {
+  width: "100%",
+  height: "100%",
+  textAlign: "center",
+  position: "relative",
+}
+
+return (
+  <>
+    {props.current ?
+      <Card>
+        <Card.Header>
+          STREAMS
+        </Card.Header>
+        <Card.Body>
+          <div>
+            Choose channel:
+            <ul>
+              {renderChannels()}
+            </ul>
+          </div>
+          <div style={styleMain}>
+            {renderFrames()}
+          </div>
+        </Card.Body>
+      </Card> : <Alert variant={"danger"}>
+        Please select device first!
+      </Alert>
+    }
+  </>
+)
 }
 
 export default Recording
