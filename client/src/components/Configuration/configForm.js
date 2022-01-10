@@ -12,7 +12,6 @@ function ConfigForm(props) {
   function addRule() {
     let rules = []
     if(current.rules){
-      console.log("**********")
       rules = JSON.parse(current.rules)
     }
     let rule = {
@@ -89,20 +88,6 @@ function ConfigForm(props) {
       return
     }
     return <Form onSubmit={(e) => props.handleSubmit(e, current)}>
-      <Row>
-        <Col className="px-1" md="4">
-          <Form.Group>
-            <label>Loop Interval</label>
-            <Form.Control
-              value={current.loop}
-              placeholder="Loop interval"
-              type="text"
-              name={"loop"}
-              onChange={e => handleChange(e)}
-            />
-          </Form.Group>
-        </Col>
-      </Row>
       <Row>
         <Card.Header>Rules</Card.Header>
       </Row>
