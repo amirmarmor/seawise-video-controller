@@ -18,50 +18,48 @@ function Recording(props) {
   }
 
   function renderFrames() {
-    if(!ch) {
+    if (!ch) {
       setch(0)
     }
     return <Frame
-      key={`Channels-${i}`}
+      key={`Channels-${ch}`}
       channel={ch}
       sn={props.current.sn}
     />
   }
 
-  return frames
-}
 
-const styleMain = {
-  width: "100%",
-  height: "100%",
-  textAlign: "center",
-  position: "relative",
-}
+  const styleMain = {
+    width: "100%",
+    height: "100%",
+    textAlign: "center",
+    position: "relative",
+  }
 
-return (
-  <>
-    {props.current ?
-      <Card>
-        <Card.Header>
-          STREAMS
-        </Card.Header>
-        <Card.Body>
-          <div>
-            Choose channel:
-            <ul>
-              {renderChannels()}
-            </ul>
-          </div>
-          <div style={styleMain}>
-            {renderFrames()}
-          </div>
-        </Card.Body>
-      </Card> : <Alert variant={"danger"}>
-        Please select device first!
-      </Alert>
-    }
-  </>
-)
+  return (
+    <>
+      {props.current ?
+        <Card>
+          <Card.Header>
+            STREAMS
+          </Card.Header>
+          <Card.Body>
+            <div>
+              Choose channel:
+              <ul>
+                {renderChannels()}
+              </ul>
+            </div>
+            <div style={styleMain}>
+              {renderFrames()}
+            </div>
+          </Card.Body>
+        </Card> : <Alert variant={"danger"}>
+          Please select device first!
+        </Alert>
+      }
+    </>
+  )
 }
 
 export default Recording
