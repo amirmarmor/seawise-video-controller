@@ -6,7 +6,7 @@ function Recording(props) {
   const [ch, setch] = useState()
 
   function handleClick(ch){
-    stech(ch)
+    setch(ch)
   }
 
   function renderChannels(){
