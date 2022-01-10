@@ -18,9 +18,6 @@ function Recording(props) {
   }
 
   function renderFrames() {
-    if (!ch) {
-      setch(0)
-    }
     return <Frame
       key={`Channels-${ch}`}
       channel={ch}
