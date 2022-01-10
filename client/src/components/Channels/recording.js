@@ -1,8 +1,20 @@
-import React from "react"
+import React, {useState} from "react"
 import {Alert, Card} from "react-bootstrap"
 import Frame from "./frame"
 
 function Recording(props) {
+  const [ch, setch] = useState()
+
+  function handleClick(ch){
+    stech(ch)
+  }
+
+  function renderChannels(){
+    let lis = []
+    for (let i = 0; i < props.current.channels; i++) {
+      lis.push(<li onClick={()=>handleClick(i)}>i</li>)
+    }
+  }
   function renderFrames() {
     let frames = []
     for (let i = 0; i < props.current.channels; i++) {
@@ -32,6 +44,12 @@ function Recording(props) {
             STREAMS
           </Card.Header>
           <Card.Body>
+            <div>
+              Choose channel:
+              <ul>
+                {renderChannels()}
+              </ul>
+            </div>
             <div style={styleMain}>
               {renderFrames()}
             </div>
