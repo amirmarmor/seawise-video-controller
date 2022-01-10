@@ -33,7 +33,7 @@ func Create(api *db.Api) *Server {
 		Streamers:       make(map[string][]*listener.Listener),
 		OutboundConn:    make(map[string]int),
 		DisconnectQueue: make(chan string),
-		clientRoot:      "/home/amirma/seawise/seawise-video-controller/client",
+		clientRoot:      "/usr/src/app/",
 	}
 
 	server.SshConfig = &ssh.ClientConfig{
