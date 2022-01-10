@@ -14,6 +14,7 @@ function Recording(props) {
     for (let i = 0; i < props.current.channels; i++) {
       lis.push(<li onClick={()=>handleClick(i)}>i</li>)
     }
+    return lis
   }
   function renderFrames() {
     let frames = []
