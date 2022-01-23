@@ -1,7 +1,7 @@
 import React from "react"
 import {Nav} from "react-bootstrap"
 import {useDispatch, useSelector} from "react-redux"
-import {restartDeviceAsync, selectCurrent, selectDevices, updateCurrent} from "../../features/device/deviceSlice"
+import {activateDeviceAsync, selectCurrent, selectDevices, updateCurrent} from "../../features/device/deviceSlice"
 
 function Sidebar({color, image}) {
   const devices = useSelector(selectDevices)
@@ -12,13 +12,11 @@ function Sidebar({color, image}) {
     dispatch(updateCurrent(device))
   }
 
-  function handleXCLick(device) {
-    dispatch(restartDeviceAsync(device))
+  function handleReportedClick(ip){
+    dispatch(activateDeviceAsync(ip))
   }
 
   function renderRegistered() {
-    const xstyle = {display: "box", position: "absolute", right: "5px", top: "2px"}
-
     if (devices === undefined) {
       return ""
     }
@@ -31,7 +29,7 @@ function Sidebar({color, image}) {
 
       return <li className={classname} key={`device-${device.sn}`} onClick={() => handleClick(device)}>
         <p className="nav-link" style={{cursor: "pointer", position: "relative"}}>
-          <span onClick={() => handleXCLick(device)} style={xstyle}>x</span>{device.ip}
+          Device - {device.sn} ({device.ip})
         </p>
       </li>
     })
@@ -42,7 +40,7 @@ function Sidebar({color, image}) {
       return
     }
     return devices.Reported.map(ip =>
-      <li key={`device-${ip}`} onClick={() => handleClick(ip)}>
+      <li key={`device-${ip}`} onClick={() => handleReportedClick(ip)}>
         <p className="nav-link" style={{cursor: "pointer", position: "relative"}}>
           {ip}
         </p>

@@ -1,24 +1,22 @@
 import React from "react"
 import {Container} from "react-bootstrap"
-import {useSelector} from "react-redux"
+import {useSelector, useDispatch} from "react-redux"
 import {
-  selectConfig, selectCurrent
+  selectCurrent, restartDeviceAsync
 } from "../features/device/deviceSlice"
 import Recording from '../components/Channels/recording'
 
 function Channels() {
   const current = useSelector(selectCurrent)
+  const dispatch = useDispatch()
 
-  function getRules() {
-    // if(config !== undefined){
-      // return JSON.parse(config.rules)
-    // }
-    return []
+  function handleClick(){
+    dispatch(restartDeviceAsync(current.ip))
   }
 
   return (
     <Container fluid>
-    {current !== undefined ? <Recording current={current}/> : ""}
+    {current !== undefined ? <Recording current={current} handleClick={handleClick}/> : ""}
     </Container>
   )
 }

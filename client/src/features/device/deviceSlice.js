@@ -69,10 +69,22 @@ export const updateDeviceAsync = (current) => {
   }
 }
 
-export const restartDeviceAsync = (device) => {
+export const restartDeviceAsync = (ip) => {
   return async () => {
     try {
-      console.log(device)
+      console.log(ip)
+      await fetch(`${api}/restart/${ip}`)
+    } catch(err){
+      console.log(err)
+    }
+  }
+}
+
+export const activateDeviceAsync = (ip) => {
+  return async () => {
+    try {
+      console.log(ip)
+      await fetch(`${api}/activate/${ip}`)
     } catch(err){
       console.log(err)
     }

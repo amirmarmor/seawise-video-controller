@@ -21,11 +21,6 @@ type Server struct {
 	SshConfig       *ssh.ClientConfig
 }
 
-//type RegisteredDevice struct {
-//	DeviceInfo *db.Device
-//	Streamer   []*listener.Listener
-//}
-
 func Create(api *db.Api) *Server {
 	router := mux.NewRouter()
 
@@ -54,6 +49,7 @@ func Create(api *db.Api) *Server {
 	router.HandleFunc("/restart/{ip}", server.handleRestart).Methods("GET")
 	router.HandleFunc("/stream/{sn}/{ch}", server.HandleOutbound)
 	router.HandleFunc("/report", server.report).Methods("GET")
+	router.HandleFunc("/activate/{ip}", server.activate).Methods("GET")
 	server.Router = router
 
 	go server.handleDisconnect()
