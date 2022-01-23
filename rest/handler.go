@@ -163,8 +163,8 @@ func (s *Server) HandleOutbound(w http.ResponseWriter, r *http.Request) {
 	}
 
 	baseUrl := fmt.Sprintf("http://%v:%v", s.Streamers[sn][0].DeviceInfo.Ip, strconv.Itoa(core.Config.Device))
-	startUrl := fmt.Sprintf("%v/start/%v", baseUrl, ch)
-	stopUrl := fmt.Sprintf("%v/stop/%v", baseUrl, ch)
+	startUrl := fmt.Sprintf("%v/start", baseUrl)
+	stopUrl := fmt.Sprintf("%v/stop", baseUrl)
 
 	log.V5(fmt.Sprintf("Starting device - %v", baseUrl))
 
@@ -175,18 +175,17 @@ func (s *Server) HandleOutbound(w http.ResponseWriter, r *http.Request) {
 
 	log.V5(fmt.Sprintf("response: %v", resp))
 	time.Sleep(1 * time.Second)
-	id := sn + strconv.Itoa(channel)
 
-	s.OutboundConn[id]++
+	s.OutboundConn[sn]++
 	s.Streamers[sn][channel].Stream.ServeHTTP(w, r)
 
-	s.OutboundConn[id]--
-	if s.OutboundConn[id] == 0 {
+	s.OutboundConn[sn]--
+	if s.OutboundConn[sn] == 0 {
 		_, err = http.Get(stopUrl)
 		if err != nil {
 			log.Warn(fmt.Sprintf("Failed to stop device - %v", stopUrl))
 		}
-		log.V5(fmt.Sprintf("Stopping - %v, channel - %v", s.Streamers[sn][0].DeviceInfo.Ip, ch))
+		log.V5(fmt.Sprintf("Stopping - %v", s.Streamers[sn][0].DeviceInfo.Ip))
 	}
 }
 
