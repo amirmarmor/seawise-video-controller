@@ -16,13 +16,11 @@ import (
 	"www.seawise.com/controller/log"
 )
 
-//func send404(w http.ResponseWriter) {
-//	w.WriteHeader(404)
-//	_, err := w.Write([]byte("page not found"))
-//	if err != nil {
-//		log.Warn("failed to write response")
-//	}
-//}
+type DevicesResponse struct {
+	Registered []*db.Device
+	Reported   []string
+}
+
 func sendErrorMessage(w http.ResponseWriter) {
 	w.WriteHeader(500)
 	_, err := w.Write([]byte("an error occured"))
@@ -34,6 +32,15 @@ func sendErrorMessage(w http.ResponseWriter) {
 func (s *Server) serveFile(w http.ResponseWriter, r *http.Request) {
 	log.V5("Serving file")
 	http.ServeFile(w, r, filepath.Join(s.clientRoot, "/build/index.html"))
+}
+
+func (s *Server) report(w http.ResponseWriter, r *http.Request) {
+	s.Reported[r.RemoteAddr] = true
+	w.WriteHeader(200)
+	_, err := w.Write([]byte("ok"))
+	if err != nil {
+		sendErrorMessage(w)
+	}
 }
 
 func (s *Server) register(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +55,8 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 		sendErrorMessage(w)
 		return
 	}
+
+	s.Reported[device.Ip] = false
 
 	w.Header().Set("Contnet-Type", "application/json")
 
@@ -85,9 +94,20 @@ func (s *Server) devices(w http.ResponseWriter, r *http.Request) {
 		devices = append(devices, streamer[0].DeviceInfo)
 	}
 
+	reported := make([]string, 0)
+	for ip, notRegistered := range s.Reported {
+		if notRegistered {
+			reported = append(reported, ip)
+		}
+	}
+
+	response := &DevicesResponse{
+		devices,
+		reported,
+	}
 	encoder := s.createEncoder(w)
 
-	err := encoder.Encode(devices)
+	err := encoder.Encode(response)
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to encode response: %v", err))
 	}
