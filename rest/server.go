@@ -29,8 +29,9 @@ func Create(api *db.Api) *Server {
 		Streamers:       make(map[string][]*listener.Listener),
 		OutboundConn:    make(map[string]int),
 		DisconnectQueue: make(chan string),
-		clientRoot:      "/usr/src/app/",
-		Reported:        make(map[string]bool),
+		//TODO: change to env var
+		clientRoot: "/usr/src/app/",
+		Reported:   make(map[string]bool),
 	}
 
 	server.SshConfig = &ssh.ClientConfig{

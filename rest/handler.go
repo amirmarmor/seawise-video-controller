@@ -80,6 +80,12 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if device.Channels == 0 {
+		log.Warn(fmt.Sprintf("no channels"))
+		sendErrorMessage(w)
+		return
+	}
+
 	s.Reported[device.Ip] = false
 
 	w.Header().Set("Contnet-Type", "application/json")
