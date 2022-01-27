@@ -17,7 +17,6 @@ type Server struct {
 	OutboundConn    map[string]int
 	DisconnectQueue chan string
 	clientRoot      string
-	Reported        map[string]bool
 	SshConfig       *ssh.ClientConfig
 }
 
@@ -29,9 +28,7 @@ func Create(api *db.Api) *Server {
 		Streamers:       make(map[string][]*listener.Listener),
 		OutboundConn:    make(map[string]int),
 		DisconnectQueue: make(chan string),
-		//TODO: change to env var
-		clientRoot: "/usr/src/app/",
-		Reported:   make(map[string]bool),
+		clientRoot:      core.Config.CRoot,
 	}
 
 	server.SshConfig = &ssh.ClientConfig{

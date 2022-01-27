@@ -86,8 +86,6 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.Reported[device.Ip] = false
-
 	w.Header().Set("Contnet-Type", "application/json")
 
 	newDevice, err := s.Api.RegisterDevice(device)

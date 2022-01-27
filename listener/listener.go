@@ -26,6 +26,7 @@ type Listener struct {
 }
 
 func Create(port int, device *db.Device, dq *chan string) ([]*Listener, error) {
+
 	if core.Config.Parallel {
 		listeners := make([]*Listener, 0)
 		for i := 0; i < device.Channels; i++ {

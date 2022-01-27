@@ -14,6 +14,7 @@ type Configuration = struct {
 	Parallel bool
 	SSHUser  string
 	SSHPass  string
+	CRoot    string
 }
 
 var Config Configuration
@@ -25,6 +26,7 @@ func InitFlags() {
 	flag.StringVar(&Config.Path, "path", "/", "The db host")
 	flag.StringVar(&Config.SSHUser, "sshuser", "pi", "pi user")
 	flag.StringVar(&Config.SSHPass, "sshpass", "raspberry", "pi pass")
+	flag.StringVar(&Config.CRoot, "croot", "/home/amirma/seawise/seawise-video-controller/client", "path to client")
 	flag.BoolVar(&Config.Parallel, "parallel", true, "parallel or rotating")
 
 	log.AddNotify(postParse)
