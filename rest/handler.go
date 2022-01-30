@@ -5,21 +5,16 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/ssh"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 	"www.seawise.com/controller/core"
 	"www.seawise.com/controller/db"
 	"www.seawise.com/controller/listener"
 	"www.seawise.com/controller/log"
 )
-
-type DevicesResponse struct {
-	Registered []*db.Device
-	Reported   []string
-}
 
 func sendErrorMessage(w http.ResponseWriter) {
 	w.WriteHeader(500)
@@ -34,37 +29,14 @@ func (s *Server) serveFile(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath.Join(s.clientRoot, "/build/index.html"))
 }
 
-func (s *Server) report(w http.ResponseWriter, r *http.Request) {
-	addr := strings.Split(r.RemoteAddr, ":")
-	s.Reported[addr[0]] = true
-	w.WriteHeader(200)
+func (s *Server) health(w http.ResponseWriter, r *http.Request) {
+	log.V5("Health Check")
+
 	_, err := w.Write([]byte("ok"))
-	if err != nil {
-		sendErrorMessage(w)
-	}
-}
-
-func (s *Server) activate(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	ip := vars["ip"]
-	if ip == "" {
-		log.Warn(fmt.Sprintf("invalid ip"))
-		sendErrorMessage(w)
-		return
-	}
-
-	err := s.sshCmd(ip, "bash -c '/home/pi/seawise-video-streamer/updatepi.sh > /home/pi/sw-activation.log 2>&1' &")
-	if err != nil {
-		log.Warn(fmt.Sprintf("failed to activate ip: %v", err))
-		sendErrorMessage(w)
-		return
-	}
-
-	response := "ip activated"
-	_, err = w.Write([]byte(response))
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func (s *Server) register(w http.ResponseWriter, r *http.Request) {
@@ -89,16 +61,26 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Contnet-Type", "application/json")
 
 	newDevice, err := s.Api.RegisterDevice(device)
-
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to register device: %v", err))
 		sendErrorMessage(w)
 		return
 	}
 
+	if s.Streamers[newDevice.Sn] != nil {
+		log.V5(fmt.Sprintf("device %v already registered", device.Sn))
+		for _, streamer := range s.Streamers[newDevice.Sn] {
+			err = streamer.TCPListener.Close()
+			if err != nil {
+				log.Warn(fmt.Sprintf("failed to close stale listener: %v", err))
+			}
+		}
+		delete(s.Streamers, newDevice.Sn)
+	}
+
 	log.V5(fmt.Sprintf("registering device %v", device.Sn))
 
-	port := core.Config.Port + 1 + (len(s.Streamers) * 10)
+	port := core.Config.Port + (s.ports * 10)
 
 	streamer, err := listener.Create(port, newDevice, &s.DisconnectQueue)
 	if err != nil {
@@ -122,20 +104,9 @@ func (s *Server) devices(w http.ResponseWriter, r *http.Request) {
 		devices = append(devices, streamer[0].DeviceInfo)
 	}
 
-	reported := make([]string, 0)
-	for ip, notRegistered := range s.Reported {
-		if notRegistered {
-			reported = append(reported, ip)
-		}
-	}
-
-	response := &DevicesResponse{
-		devices,
-		reported,
-	}
 	encoder := s.createEncoder(w)
 
-	err := encoder.Encode(response)
+	err := encoder.Encode(devices)
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to encode response: %v", err))
 	}
@@ -190,18 +161,26 @@ func (s *Server) HandleOutbound(w http.ResponseWriter, r *http.Request) {
 		sendErrorMessage(w)
 	}
 
-	baseUrl := fmt.Sprintf("http://%v:%v", s.Streamers[sn][0].DeviceInfo.Ip, strconv.Itoa(core.Config.Device))
-	startUrl := fmt.Sprintf("%v/start", baseUrl)
-	stopUrl := fmt.Sprintf("%v/stop", baseUrl)
+	l := s.Streamers[sn]
+
+	baseUrl := fmt.Sprintf("http://%v:%v", l[0].DeviceInfo.Ip, strconv.Itoa(core.Config.Device))
 
 	log.V5(fmt.Sprintf("Starting device - %v", baseUrl))
 
-	resp, err := http.Get(startUrl)
+	resp, err := http.Get(baseUrl + "/start")
 	if err != nil {
-		log.Warn(fmt.Sprintf("Failed to start device - %v", startUrl))
+		log.Warn(fmt.Sprintf("Failed to start device - %v", err))
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Warn(fmt.Sprintf("failed to read response: %v", err))
+		return
 	}
 
-	log.V5(fmt.Sprintf("response: %v", resp))
+	log.V5(fmt.Sprintf("response: %v", string(body)))
 	time.Sleep(1 * time.Second)
 
 	s.OutboundConn[sn]++
@@ -209,9 +188,10 @@ func (s *Server) HandleOutbound(w http.ResponseWriter, r *http.Request) {
 
 	s.OutboundConn[sn]--
 	if s.OutboundConn[sn] == 0 {
-		_, err = http.Get(stopUrl)
+		_, err = http.Get(baseUrl + "/stop")
 		if err != nil {
-			log.Warn(fmt.Sprintf("Failed to stop device - %v", stopUrl))
+			log.Warn(fmt.Sprintf("Failed to stop device - %v", err))
+			return
 		}
 		log.V5(fmt.Sprintf("Stopping - %v", s.Streamers[sn][0].DeviceInfo.Ip))
 	}

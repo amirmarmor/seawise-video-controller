@@ -32,25 +32,6 @@ export const getDevicesAsync = () => {
   }
 }
 
-export const getRealtimeAsync = () => {
-  return async (dispatch, getState) => {
-    let state = getState()
-    if (state.device.current === undefined) {
-      return
-    }
-    try {
-      const result = await fetch(`${api}/api/realtime/${state.device.current}`)
-      const realtime = await result.json()
-      const device = {
-        channels: realtime.channels,
-        ip: realtime.ip,
-      }
-      dispatch(updateRealtime(device))
-    } catch (err) {
-      console.log(err)
-    }
-  }
-}
 
 export const updateDeviceAsync = (current) => {
   return async (dispatch) => {
@@ -74,17 +55,6 @@ export const restartDeviceAsync = (ip) => {
     try {
       console.log(ip)
       await fetch(`${api}/restart/${ip}`)
-    } catch(err){
-      console.log(err)
-    }
-  }
-}
-
-export const activateDeviceAsync = (ip) => {
-  return async () => {
-    try {
-      console.log(ip)
-      await fetch(`${api}/activate/${ip}`)
     } catch(err){
       console.log(err)
     }

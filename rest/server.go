@@ -11,6 +11,7 @@ import (
 )
 
 type Server struct {
+	ports           int
 	Router          *mux.Router
 	Api             *db.Api
 	Streamers       map[string][]*listener.Listener
@@ -24,6 +25,7 @@ func Create(api *db.Api) *Server {
 	router := mux.NewRouter()
 
 	server := &Server{
+		ports:           1,
 		Api:             api,
 		Streamers:       make(map[string][]*listener.Listener),
 		OutboundConn:    make(map[string]int),
@@ -46,8 +48,7 @@ func Create(api *db.Api) *Server {
 	router.HandleFunc("/update", server.update)
 	router.HandleFunc("/restart/{ip}", server.handleRestart).Methods("GET")
 	router.HandleFunc("/stream/{sn}/{ch}", server.HandleOutbound)
-	router.HandleFunc("/report", server.report).Methods("GET")
-	router.HandleFunc("/activate/{ip}", server.activate).Methods("GET")
+	router.HandleFunc("/health", server.health).Methods("GET")
 	server.Router = router
 
 	go server.handleDisconnect()

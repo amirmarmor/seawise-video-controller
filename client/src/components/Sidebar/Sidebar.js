@@ -1,7 +1,7 @@
 import React from "react"
 import {Nav} from "react-bootstrap"
 import {useDispatch, useSelector} from "react-redux"
-import {activateDeviceAsync, selectCurrent, selectDevices, updateCurrent} from "../../features/device/deviceSlice"
+import {selectCurrent, selectDevices, updateCurrent} from "../../features/device/deviceSlice"
 
 function Sidebar({color, image}) {
   const devices = useSelector(selectDevices)
@@ -12,16 +12,12 @@ function Sidebar({color, image}) {
     dispatch(updateCurrent(device))
   }
 
-  function handleReportedClick(ip){
-    dispatch(activateDeviceAsync(ip))
-  }
-
-  function renderRegistered() {
+  function renderDevices() {
     if (devices === undefined) {
       return ""
     }
 
-    return devices.Registered.map((device) => {
+    return devices.map((device) => {
       let classname = ""
       if (current && device.sn === current.sn) {
         classname = "active"
@@ -33,19 +29,6 @@ function Sidebar({color, image}) {
         </p>
       </li>
     })
-  }
-
-  function renderReported() {
-    if (devices === undefined) {
-      return
-    }
-    return devices.Reported.map(ip =>
-      <li key={`device-${ip}`} onClick={() => handleReportedClick(ip)}>
-        <p className="nav-link" style={{cursor: "pointer", position: "relative"}}>
-          {ip}
-        </p>
-      </li>
-    )
   }
 
   return (<div className="sidebar" data-image={image} data-color={color}>
@@ -74,15 +57,9 @@ function Sidebar({color, image}) {
       </div>
       <Nav>
         <Nav.Item style={{marginLeft: "10px"}}>
-          <p>Registered Device</p>
+          <p>Connected Devices</p>
         </Nav.Item>
-        {renderRegistered()}
-      </Nav>
-      <Nav>
-        <Nav.Item style={{marginLeft: "10px"}}>
-          <p>Reported Device</p>
-        </Nav.Item>
-        {renderReported()}
+        {renderDevices()}
       </Nav>
     </div>
   </div>)
