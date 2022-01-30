@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"time"
 	"www.seawise.com/controller/core"
@@ -104,6 +105,10 @@ func (s *Server) devices(w http.ResponseWriter, r *http.Request) {
 		devices = append(devices, streamer[0].DeviceInfo)
 	}
 
+	sort.SliceStable(devices, func(i, j int) bool {
+		return devices[i].Sn < devices[j].Sn
+	})
+
 	encoder := s.createEncoder(w)
 
 	err := encoder.Encode(devices)
@@ -186,15 +191,15 @@ func (s *Server) HandleOutbound(w http.ResponseWriter, r *http.Request) {
 	s.OutboundConn[sn]++
 	s.Streamers[sn][channel].Stream.ServeHTTP(w, r)
 
-	s.OutboundConn[sn]--
-	if s.OutboundConn[sn] == 0 {
-		_, err = http.Get(baseUrl + "/stop")
-		if err != nil {
-			log.Warn(fmt.Sprintf("Failed to stop device - %v", err))
-			return
-		}
-		log.V5(fmt.Sprintf("Stopping - %v", s.Streamers[sn][0].DeviceInfo.Ip))
-	}
+	//s.OutboundConn[sn]--
+	//if s.OutboundConn[sn] == 0 {
+	//	_, err = http.Get(baseUrl + "/stop")
+	//	if err != nil {
+	//		log.Warn(fmt.Sprintf("Failed to stop device - %v", err))
+	//		return
+	//	}
+	//	log.V5(fmt.Sprintf("Stopping - %v", s.Streamers[sn][0].DeviceInfo.Ip))
+	//}
 }
 
 func (s *Server) handleDisconnect() {

@@ -81,18 +81,18 @@ func (l *Listener) Run() {
 			continue
 		}
 
-		buf, err := l.EncodeImage(l.Frame.Bytes())
-		if err != nil {
-			log.Warn(fmt.Sprintf("failed to encode image: %v", err))
-			return
-		}
+		//buf, err := l.EncodeImage(l.Frame.Bytes())
+		//if err != nil {
+		//	log.Warn(fmt.Sprintf("failed to encode image: %v", err))
+		//	return
+		//}
 
-		err = l.Recorder.DoRecord(buf)
+		err := l.Recorder.DoRecord(l.Frame.Bytes())
 		if err != nil {
 			log.Warn(fmt.Sprintf("failed to record: %v", err))
 		}
 
-		l.Stream.UpdateJPEG(buf)
+		l.Stream.UpdateJPEG(l.Frame.Bytes())
 		l.FrameMutex.RUnlock()
 	}
 }
@@ -100,7 +100,7 @@ func (l *Listener) Run() {
 func (l *Listener) EncodeImage(data []byte) ([]byte, error) {
 	const jpegQuality = 50
 
-	mat, err := gocv.NewMatFromBytes(720, 1280, gocv.MatTypeCV8UC3, data)
+	mat, err := gocv.NewMatFromBytes(1080, 1920, gocv.MatTypeCV8UC3, data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to recreate mat from bytes: %v", err)
 	}

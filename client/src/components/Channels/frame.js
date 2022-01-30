@@ -20,7 +20,7 @@ function Frame(props) {
         iframe.contentWindow.document.head.appendChild(style)
         clearInterval(interval)
       }
-    }, 10)
+    }, 100)
   }
 
   const frameStyle={
