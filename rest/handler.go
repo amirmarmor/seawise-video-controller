@@ -81,7 +81,7 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 
 	log.V5(fmt.Sprintf("registering device %v", device.Sn))
 
-	port := core.Config.Port + (s.ports * 10)
+	port := 9000 + (s.ports * 10)
 
 	streamer, err := listener.Create(port, newDevice, &s.DisconnectQueue)
 	if err != nil {
