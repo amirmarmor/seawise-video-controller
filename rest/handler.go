@@ -97,6 +97,8 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Warn(fmt.Sprintf("failed to encode response: %v", err))
 	}
+
+	s.ports++
 }
 
 func (s *Server) devices(w http.ResponseWriter, r *http.Request) {
