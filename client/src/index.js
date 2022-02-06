@@ -14,8 +14,8 @@ import {getDevicesAsync, getRealtimeAsync} from "./features/device/deviceSlice"
 
 const store = configureStore()
 store.dispatch(getDevicesAsync())
+
 let interval = setInterval(()=>{
-  console.log("getting devices")
   store.dispatch(getDevicesAsync())
 }, 5000)
 
@@ -25,7 +25,6 @@ const renderApp = () =>
       <BrowserRouter>
         <Switch>
           <Route path="/" render={(props) => <AdminLayout {...props} />}/>
-          {/*<Redirect from="/*" to="/admin"/>*/}
         </Switch>
       </BrowserRouter>
     </Provider>,

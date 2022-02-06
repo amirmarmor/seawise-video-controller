@@ -1,4 +1,4 @@
-package listener
+package device
 
 import (
 	"bufio"
@@ -15,6 +15,7 @@ func (l *Listener) run() {
 		l.TCPListenerMutex.Lock()
 		l.FrameMutex.Lock()
 		conn, err := l.TCPListener.Accept()
+		log.V5(fmt.Sprintf("CONNECCETTTEDDD"))
 		if err != nil {
 			log.Warn(fmt.Sprintf("broken connection: %v", err))
 			continue
@@ -50,7 +51,7 @@ func (l *Listener) handleConn(conn net.Conn) {
 				log.Warn(fmt.Sprintf("failed to close listener: %v", err))
 			}
 			log.Warn(fmt.Sprintf("Listener closed - %v", l.TCPListener))
-			*l.disconnectQueue <- l.Recorder.Sn
+			//*l.disconnectQueue <- l.Recorder.Sn
 			break
 		}
 

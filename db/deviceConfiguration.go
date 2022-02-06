@@ -15,18 +15,15 @@ type Rule struct {
 	Type      string `json:"type"`
 }
 
-type Device struct {
-	Sn       string  `json:"sn"`
-	Ip       string  `json:"ip"`
-	Channels int     `json:"channels"`
-	Loop     int     `json:"loop"`
-	Port     int     `json:"port"`
-	Owner    string  `json:"owner"`
-	Rules    []*Rule `json:"rules"`
+type DeviceConfiguration struct {
+	Sn    string  `json:"sn"`
+	Ip    string  `json:"ip"`
+	Owner string  `json:"owner"`
+	Rules []*Rule `json:"rules"`
 }
 
-func (a *Api) UpdateDevice(device *Device) (*Device, error) {
-	exists, err := a.GetDevice(device.Sn)
+func (a *Api) UpdateDeviceConfiguration(device *DeviceConfiguration) (*DeviceConfiguration, error) {
+	exists, err := a.GetDeviceConfiguration(device.Sn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device: %v", err)
 	}
@@ -35,10 +32,9 @@ func (a *Api) UpdateDevice(device *Device) (*Device, error) {
 		return nil, nil
 	}
 
-	exists.Loop = device.Loop
 	exists.Rules = device.Rules
 
-	err = a.setDevice(exists)
+	err = a.setDeviceConfiguration(exists)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save device: %v", err)
 	}
@@ -46,31 +42,31 @@ func (a *Api) UpdateDevice(device *Device) (*Device, error) {
 	return exists, nil
 }
 
-func (a *Api) RegisterDevice(device *Device) (*Device, error) {
-	exists, err := a.GetDevice(device.Sn)
+func (a *Api) RegisterDeviceConfiguration(device *DeviceConfiguration) (*DeviceConfiguration, error) {
+	exists, err := a.GetDeviceConfiguration(device.Sn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device: %v", err)
 	}
 
 	if exists == nil {
-		err = a.setDevice(device)
+		err = a.setDeviceConfiguration(device)
 		if err != nil {
 			return nil, fmt.Errorf("failed to save device: %v", err)
 		}
 		return device, nil
 	}
 
-	exists.Channels = device.Channels
 	exists.Ip = device.Ip
 
-	err = a.setDevice(exists)
+	err = a.setDeviceConfiguration(exists)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save device: %v", err)
 	}
+
 	return exists, nil
 }
 
-func (a *Api) setDevice(device *Device) error {
+func (a *Api) setDeviceConfiguration(device *DeviceConfiguration) error {
 	deviceJson, err := json.Marshal(device)
 	if err != nil {
 		return fmt.Errorf("failed to marshal device: %v", err)
@@ -84,15 +80,15 @@ func (a *Api) setDevice(device *Device) error {
 	return nil
 }
 
-func (a *Api) GetDevices() ([]*Device, error) {
+func (a *Api) GetDevicesConfiguration() ([]*DeviceConfiguration, error) {
 	resp, err := a.hgetall(devicesKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get devices: %v", err)
 	}
 
-	devices := make([]*Device, 0)
+	devices := make([]*DeviceConfiguration, 0)
 	for _, row := range resp {
-		device := &Device{}
+		device := &DeviceConfiguration{}
 		err = json.Unmarshal([]byte(row), device)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal device: %v", err)
@@ -103,7 +99,7 @@ func (a *Api) GetDevices() ([]*Device, error) {
 	return devices, nil
 }
 
-func (a *Api) GetDevice(sn string) (*Device, error) {
+func (a *Api) GetDeviceConfiguration(sn string) (*DeviceConfiguration, error) {
 	exists, err := a.hexists(devicesKey, sn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hexists device: %v", err)
@@ -118,7 +114,7 @@ func (a *Api) GetDevice(sn string) (*Device, error) {
 		return nil, fmt.Errorf("failed to hget device: %v", err)
 	}
 
-	device := &Device{}
+	device := &DeviceConfiguration{}
 	err = json.Unmarshal([]byte(deviceString), device)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal device: %v", err)

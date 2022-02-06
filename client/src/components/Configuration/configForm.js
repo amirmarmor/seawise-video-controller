@@ -89,7 +89,8 @@ function ConfigForm(props) {
     }
     return <Form onSubmit={(e) => props.handleSubmit(e, current)}>
       <Row>
-        <Card.Header>Rules</Card.Header>
+        <Card.Header>DEVICE: {current.sn} (ip: {current.ip}), CAMERAS: {props.channels}</Card.Header>
+        <Card.Body>Rules</Card.Body>
       </Row>
       {renderRules()}
       <Button

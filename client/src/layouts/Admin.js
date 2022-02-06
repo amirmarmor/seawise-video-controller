@@ -18,7 +18,6 @@
 import React from "react"
 import {Route, Switch, useLocation} from "react-router-dom"
 
-import AdminNavbar from "../components/Navbars/AdminNavbar"
 import Footer from "../components/Footer/Footer"
 import Sidebar from "../components/Sidebar/Sidebar"
 
@@ -65,7 +64,6 @@ function Admin() {
       <div className="wrapper">
         <Sidebar color={color} image={hasImage ? image : ""} routes={routes}/>
         <div className="main-panel" ref={mainPanel}>
-          <AdminNavbar/>
           <div className="content">
             <Switch>{getRoutes(routes)}</Switch>
           </div>

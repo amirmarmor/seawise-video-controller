@@ -42,7 +42,7 @@ package core
 //	cm := &ConfigManager{
 //		DevicesConfig: make(map[int]*DeviceConfiguration),
 //	}
-//	err := cm.GetDevices()
+//	err := cm.GetDevicesConfiguration()
 //	if err != nil {
 //		return nil, fmt.Errorf("failed to get devices: %v", err)
 //	}
@@ -57,7 +57,7 @@ package core
 //	return cm, nil
 //}
 //
-//func (cm *ConfigManager) GetDevices() error {
+//func (cm *ConfigManager) GetDevicesConfiguration() error {
 //	backend := "http://" + Config.BackendHost + ":" + strconv.Itoa(Config.BackendPort) + "/api/devices"
 //	resp, err := http.Get(backend)
 //	if err != nil || resp.StatusCode != 200 {

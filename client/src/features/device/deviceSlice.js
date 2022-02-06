@@ -21,10 +21,22 @@ export const deviceSlice = createSlice({
 })
 
 export const getDevicesAsync = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     try {
+      const state = getState()
       const result = await fetch(`${api}/devices`)
       const json = await result.json()
+      if(state.device.current && state.device.current.status){
+        let retainCurrent = false
+        json.forEach(item => {
+          if(state.device.current.configuration.sn === item.configuration.sn && item.status){
+            retainCurrent = true
+          }
+        })
+        if(!retainCurrent){
+          dispatch(updateCurrent({}))
+        }
+      }
       dispatch(updateDevices(json))
     } catch (err) {
       console.log(err)
@@ -32,6 +44,19 @@ export const getDevicesAsync = () => {
   }
 }
 
+export const activateDeviceAsync = (sn) => {
+  return async (dispatch) => {
+    try {
+      console.log(api, sn)
+      let resp = await fetch(`${api}/activate/${sn}`)
+      let json = await resp.json()
+      console.log(json)
+      dispatch(updateCurrent(json))
+    } catch(err){
+      console.log(err)
+    }
+  }
+}
 
 export const updateDeviceAsync = (current) => {
   return async (dispatch) => {
@@ -50,11 +75,11 @@ export const updateDeviceAsync = (current) => {
   }
 }
 
-export const restartDeviceAsync = (ip) => {
+export const directDeviceAsync = (sn, action) => {
   return async () => {
     try {
-      console.log(ip)
-      await fetch(`${api}/restart/${ip}`)
+      console.log(sn, action)
+      await fetch(`${api}/action/${action}/${sn}`)
     } catch(err){
       console.log(err)
     }

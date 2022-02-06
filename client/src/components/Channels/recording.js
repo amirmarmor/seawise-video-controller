@@ -10,7 +10,7 @@ function Recording(props) {
         <Frame
           key={`Channels-${i}`}
           channel={i}
-          sn={props.current.sn}
+          sn={props.current.configuration.sn}
         />
       )
     }
@@ -28,9 +28,14 @@ function Recording(props) {
     <>
       {props.current ?
         <Card>
-          <Card.Header>
+          <Card.Header style={{position: "relative", height: "80px"}}>
             STREAMS
-            <button onClick={()=>props.handleClick()}>Restart</button>
+            <div style={{position: "absolute", right: "0"}}>
+              <button style={{marginRight: "10px"}} onClick={()=>props.handleClick('stop')}>Stop</button>
+              <button style={{marginRight: "10px"}} onClick={()=>props.handleClick('shutdown')}>Shutdown</button>
+              <button style={{marginRight: "10px"}} onClick={()=>props.handleClick('restart')}>Restart</button>
+              <button style={{marginRight: "10px"}} onClick={()=>props.handleClick('reboot')}>Reboot</button>
+            </div>
           </Card.Header>
           <Card.Body>
             <div style={styleMain}>

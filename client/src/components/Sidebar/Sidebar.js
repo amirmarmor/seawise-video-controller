@@ -1,7 +1,7 @@
 import React from "react"
 import {Nav} from "react-bootstrap"
 import {useDispatch, useSelector} from "react-redux"
-import {selectCurrent, selectDevices, updateCurrent} from "../../features/device/deviceSlice"
+import {activateDeviceAsync, selectCurrent, selectDevices, updateCurrent} from "../../features/device/deviceSlice"
 
 function Sidebar({color, image}) {
   const devices = useSelector(selectDevices)
@@ -9,29 +9,37 @@ function Sidebar({color, image}) {
   const dispatch = useDispatch()
 
   function handleClick(device) {
+    if(!device.status){
+      dispatch(activateDeviceAsync(device.configuration.sn))
+    }
     dispatch(updateCurrent(device))
   }
 
   function renderDevices() {
-    if (devices === undefined) {
+    if (devices === undefined || devices.length === 0) {
       return ""
     }
 
     return devices.map((device) => {
       let classname = ""
-      if (current && device.sn === current.sn) {
+      let color = "white"
+
+      if (current && current.configuration && device.configuration.sn === current.configuration.sn) {
         classname = "active"
       }
 
-      return <li className={classname} key={`device-${device.sn}`} onClick={() => handleClick(device)}>
-        <p className="nav-link" style={{cursor: "pointer", position: "relative"}}>
-          Device - {device.sn} ({device.ip})
+      if(!device.status){
+        color = "grey"
+      }
+      return <li className={classname} key={`device-${device.sn}`} onClick={()=>handleClick(device)}>
+        <p className="nav-link" style={{cursor: "pointer", position: "relative", color: color}}>
+          Device - {device.configuration.sn} ({device.configuration.ip})
         </p>
       </li>
     })
   }
 
-  return (<div className="sidebar" data-image={image} data-color={color}>
+  return (<div className="sidebar" dstringata-image={image} data-color={color}>
     <div
       className="sidebar-background"
       style={{
