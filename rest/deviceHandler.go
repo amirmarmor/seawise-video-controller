@@ -78,30 +78,3 @@ func (s *Server) handleAction(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
-
-//func (s *Server) handleRegistration(deviceConfig *db.DeviceConfiguration) (*db.DeviceConfiguration, error) {
-//
-//	streamer := &device.Streamer{}
-//	if device.Status == "report" {
-//		streamer.Registered = false
-//		streamer.DeviceInfo = device
-//	} else {
-//		port := 9000 + (s.ports * 10)
-//
-//		var listeners []*streamer.Listener
-//
-//		listeners, err = streamer.CreateListener(port, device, &s.DisconnectQueue)
-//		if err != nil {
-//			return nil, fmt.Errorf("failed to open socket %v: %v", port, err)
-//		}
-//
-//		streamer.Listeners = listeners
-//		newDevice.Port = port
-//		streamer.Registered = true
-//		s.ports++
-//	}
-//
-//	s.Devices[newDevice.Sn] = streamer
-//
-//	return newDevice, nil
-//}

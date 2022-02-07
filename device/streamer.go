@@ -2,7 +2,6 @@ package device
 
 import (
 	"time"
-	"www.seawise.com/controller/core"
 	"www.seawise.com/controller/db"
 )
 
@@ -20,7 +19,7 @@ type Streamer struct {
 func Create(device *db.DeviceConfiguration, port int, dq *chan string) *Streamer {
 	streamer := &Streamer{
 		DeviceInfo:      device,
-		Port:            core.Config.Port + (port * 10),
+		Port:            9000 + (port * 10),
 		Timeout:         time.NewTimer(2 * time.Second),
 		disconnectQueue: dq,
 		Alive:           true,
